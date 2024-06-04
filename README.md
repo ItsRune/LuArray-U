@@ -1,38 +1,39 @@
-[x] Array.from
-[x] Array.o
-[x] Array:filter
-[x] Array:ma
-[x] Array.new
-[x] Array:som
-[x] Array:forEach
-[x] Array:fin
-[x] Array:every
-[ ] Array:a
-[ ] Array:flat
-[ ] Array:flatma
-[x] Array:entries
-[ ] Array:copyWithi
-[ ] Array:concat
-[x] Array:findInde
-[x] Array:findLast
-[x] Array:findLastInde
-[x] Array:includes
-[ ] Array:indexO
-[ ] Array:join
-[ ] Array:key
-[x] Array:lastIndexOf
-[x] Array:po
-[x] Array:push
-[x] Array:reduc
-[ ] Array:reduceRight
-[x] Array:revers
-[ ] Array:shift
-[x] Array:slic
-[x] Array:sort
-[x] Array:toReverse
-[x] Array:toSorted
-[x] Array:toSplice
-[x] Array:toString
-[ ] Array:unshif
-[x] Array:values
-[ ] Array:wit
+# To do list
+- [x] Array.from
+- [x] Array.of
+- [x] Array:filter
+- [x] Array:map
+- [x] Array.new
+- [x] Array:some
+- [x] Array:forEach
+- [x] Array:find
+- [x] Array:every
+- [ ] Array:at
+- [ ] Array:flat
+- [ ] Array:flatmap
+- [x] Array:entries
+- [ ] Array:copyWithin
+- [ ] Array:concat
+- [x] Array:findIndex
+- [x] Array:findLast
+- [x] Array:findLastIndex
+- [x] Array:includes
+- [ ] Array:indexOf
+- [ ] Array:join
+- [ ] Array:keys
+- [x] Array:lastIndexOf
+- [x] Array:pop
+- [x] Array:push
+- [x] Array:reduce
+- [ ] Array:reduceRight
+- [x] Array:reverse
+- [ ] Array:shift
+- [x] Array:slice
+- [x] Array:sort
+- [x] Array:toReversed
+- [x] Array:toSorted
+- [x] Array:toSpliced
+- [x] Array:toString
+- [ ] Array:unshift
+- [x] Array:values
+- [ ] Array:with
