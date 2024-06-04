@@ -25,7 +25,7 @@ export type arrayPriv<T> = {
 
 	map: (Callback: (data: T, index: number, array: { T }) -> T) -> arrayPriv<T>,
 	flat: (depth: number?) -> arrayPriv<T>,
-	flatMap: (Callback: (data: T, index: number, array: { T }) -> T) -> arrayPriv<K>,
+	flatMap: (Callback: (data: T, index: number, array: { T }) -> T) -> arrayPriv<T>,
 	reduce: (Callback: (accumulator: T, currentValue: T) -> T, initialValue: K?) -> T,
 	reduceRight: (Callback: (accumulator: T, currentValue: T) -> T, initialValue: K?) -> T,
 	some: (Callback: (data: T, index: number, array: { T }) -> boolean) -> boolean,
@@ -476,7 +476,7 @@ end
 	@within Array
 ]=]
 --
-function Class:flatMap<T, K>(Callback: (data: T, index: number, array: { T }) -> T): arrayPriv<K>
+function Class:flatMap<T, K>(Callback: (data: T, index: number, array: { T }) -> T): arrayPriv<T>
 	local newArray = self:map(Callback)
 	local newNewArray = newArray:flat(1)
 
