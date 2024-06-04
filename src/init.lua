@@ -4,16 +4,68 @@ export type arrayPriv<T> = {
 	__index: (self: arrayPriv<T>, index: any) -> any,
 	__iter: (self: arrayPriv<T>) -> { T },
 
-	Length: number,
+	_changeLoop: (Callback: (data: T, index: number, array: { T }) -> T) -> (T, number, { T }),
+	_filterLoop: (Callback: (data: T, index: number, array: { T }) -> T) -> arrayPriv<T>,
+	_findLoop: (
+		reversed: boolean,
+		Callback: (data: T, index: number, array: { T }) -> T
+	) -> (T?, number?, { T }?),
+	_swap: (first: number, second: number) -> (),
+	_partition: (
+		Start: number,
+		End: number,
+		Callback: (data: T, index: number, array: { T }) -> boolean
+	) -> arrayPriv<T>,
+	_quickSort: (Start: number, End: number, Callback: (data: T, index: number, array: { T }) -> boolean) -> (),
 
 	_data: { T },
 	_isArray: true,
+
+	Length: number,
+
+	map: (Callback: (data: T, index: number, array: { T }) -> T) -> arrayPriv<T>,
+	flat: (depth: number?) -> arrayPriv<T>,
+	flatMap: (Callback: (data: T, index: number, array: { T }) -> T) -> arrayPriv<K>,
+	reduce: (Callback: (accumulator: T, currentValue: T) -> T, initialValue: K?) -> T,
+	reduceRight: (Callback: (accumulator: T, currentValue: T) -> T, initialValue: K?) -> T,
+	some: (Callback: (data: T, index: number, array: { T }) -> boolean) -> boolean,
+	filter: (Callback: (data: T, index: number, array: { T }) -> boolean) -> arrayPriv<T>,
+	find: (Callback: (data: T, index: number, array: { T }) -> boolean) -> T?,
+	findIndex: (Callback: (data: T, index: number, array: { T }) -> boolean) -> (T?, number?),
+	findLast: (Callback: (data: T, index: number, array: { T }) -> boolean) -> (T?, number?),
+	findLastIndex: (Callback: (data: T, index: number, array: { T }) -> boolean) -> (T?, number?),
+	includes: (item: T) -> boolean,
+	slice: (Start: number?, End: number?) -> arrayPriv<T>,
+	forEach: (Callback: (data: T, index: number, array: { T }) -> (), _reverse: boolean?) -> (),
+	every: (Callback: (data: T, index: number, array: { T }) -> boolean) -> boolean,
+	push: (...T) -> arrayPriv<T>,
+	pop: () -> T,
+	sort: (Callback: ((a: T, b: T) -> boolean)?) -> arrayPriv<T>,
+	reverse: () -> { T },
+	splice: (index: number, deleteCount: number, ...T) -> arrayPriv<T>,
+	fill: (...any) -> arrayPriv<T>,
+	values: () -> { T },
+	entries: () -> arrayIter<T>,
+	toSpliced: (index: number, deleteCount: number, ...T) -> arrayPriv<T>,
+	toSpliced: (index: number, deleteCount: number, ...T) -> arrayPriv<T>,
+	toReversed: () -> arrayPriv<T>,
+	toSorted: (Callback: ((a: T, b: T) -> boolean)?) -> arrayPriv<T>,
+	lastIndexOf: (item: any) -> arrayPriv<T>,
+	at: (index: number?) -> T,
+	concat: (...any) -> arrayPriv<any>,
+	join: (separator: string) -> string,
+	unshift: (...T) -> number,
+	shift: () -> T,
+	Destroy: () -> (),
+	with: (index: number, value: T) -> arrayPriv<T>,
+	indexOf: (item: any) -> number,
 }
 
 export type arrayPub<T> = {
 	new: (...T) -> arrayPriv<T>,
 	isArray: (array: arrayPriv<T>?) -> boolean,
 	from: (item: { T }, callback: (data: T) -> T) -> arrayPriv<T>,
+	_new: (_forceCreation: boolean, ...T) -> arrayPriv<T>,
 }
 
 --[=[
@@ -69,7 +121,7 @@ end
 	@within Array
 ]=]
 --
-function Array._new<T>(_forceCreation: boolean?, ...: T): arrayPriv<T>
+function Array._new<T>(_forceCreation: boolean?, ...: T): arrayPriv<any>
 	local self = setmetatable({}, Class)
 	local Data = { ... }
 	local isDataLengthOfArray = (#Data == 1 and typeof(Data[1]) == "number" and not _forceCreation)
@@ -93,7 +145,7 @@ end
 	@within Array
 ]=]
 --
-function Array.new<T>(...: T): arrayPriv<T>
+function Array.new<T>(...: T): arrayPriv<any>
 	return Array._new(false, ...)
 end
 
@@ -119,7 +171,7 @@ end
 	@within Array
 ]=]
 --
-function Array.from<T>(item: T): arrayPriv<T>
+function Array.from<T>(item: T): arrayPriv<any>
 	if typeof(item) == "string" then
 		item = string.split(item, "")
 	elseif typeof(item) == "number" then
@@ -145,7 +197,7 @@ end
 	@within Array
 ]=]
 --
-function Array.of<T>(...: T): arrayPriv<T>
+function Array.of<T>(...: T): arrayPriv<any>
 	return Array._new(true, ...)
 end
 
@@ -161,7 +213,7 @@ end
 	@private
 ]=]
 --
-function Class:_changeLoop<T>(Callback: (data: T, index: number, array: { T }) -> T): (T, number, { T })
+function Class:_changeLoop<T>(Callback: (data: T, index: number, array: { T }) -> T): Array<T>
 	for index: number = 1, #self._data do
 		local value = self._data[index]
 		local newValue = Callback(value, index, self._data)
@@ -187,7 +239,7 @@ end
 	@private
 ]=]
 --
-function Class:_filterLoop<T>(Callback: (data: T, index: number, array: { T }) -> T): arrayPriv<T>
+function Class:_filterLoop<T>(Callback: (data: T, index: number, array: { T }) -> T): arrayPriv<any>
 	local filtered = {}
 
 	for index: number = 1, #self._data do
@@ -195,7 +247,7 @@ function Class:_filterLoop<T>(Callback: (data: T, index: number, array: { T }) -
 		local shouldBeFiltered = Callback(value, index, self._data)
 
 		if shouldBeFiltered then
-			table.insert(filtered, #filtered + 1, value)
+			table.insert(filtered, value)
 		end
 	end
 
@@ -279,7 +331,7 @@ function Class:_partition<T>(
 	Start: number,
 	End: number,
 	Callback: (data: T, index: number, array: { T }) -> boolean
-): arrayPriv<T>
+): arrayPriv<any>
 	local pivot = self._data[End]
 	local sortingIndex = Start - 1
 
@@ -322,7 +374,7 @@ end
 
 --[=[
 	Creates a new Array from a variable number of arguments.
-	@param Callback (data: T, index: number, array: { T }) -> K
+	@param Callback (data: T, index: number, array: { T }) -> T
 	@return Array
 
 	```lua
@@ -337,7 +389,7 @@ end
 	@within Array
 ]=]
 --
-function Class:map<T, K>(Callback: (data: T, index: number, array: { T }) -> K): arrayPriv<T>
+function Class:map<T, K>(Callback: (data: T, index: number, array: { T }) -> T): arrayPriv<any>
 	if not Callback then
 		return self._data
 	end
@@ -372,7 +424,7 @@ end
 	@within Array
 ]=]
 --
-function Class:flat<T>(depth: number?): arrayPriv<T>
+function Class:flat<T>(depth: number): arrayPriv<any>
 	depth = depth or 1
 	local newArray = Array._new(true, table.unpack(self._data))
 
@@ -390,7 +442,7 @@ function Class:flat<T>(depth: number?): arrayPriv<T>
 
 			table.remove(newArray._data, i)
 			for j = 1, #data do
-				table.insert(newArray._data, #newArray._data + 1, data[j])
+				table.insert(newArray._data, data[j])
 				newArray.Length += 1
 			end
 			break
@@ -424,7 +476,7 @@ end
 	@within Array
 ]=]
 --
-function Class:flatMap<T, K>(Callback: (data: T, index: number, array: { T }) -> K): arrayPriv<K>
+function Class:flatMap<T, K>(Callback: (data: T, index: number, array: { T }) -> T): arrayPriv<K>
 	local newArray = self:map(Callback)
 	local newNewArray = newArray:flat(1)
 
@@ -434,7 +486,7 @@ end
 
 --[=[
 	I don't know how to explain this, [but mdn web docs do it best.](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce)
-	@param Callback (accumulator: T, currentValue: T) -> K
+	@param Callback (accumulator: T, currentValue: T) -> T
 	@param initialValue K?
 	@return K
 
@@ -456,7 +508,7 @@ end
 	@within Array
 ]=]
 --
-function Class:reduce<T, K>(Callback: (accumulator: T, currentValue: T) -> K, initialValue: K?): K
+function Class:reduce<T, K>(Callback: (accumulator: T, currentValue: T) -> T, initialValue: K?): K
 	local _mem = initialValue or 0
 
 	self:forEach(function(data: T)
@@ -468,7 +520,7 @@ end
 
 --[=[
 	Does the same thing as [reduce](/api/Array#reduce) but backwards.
-	@param Callback (accumulator: T, currentValue: T) -> K
+	@param Callback (accumulator: T, currentValue: T) -> T
 	@param initialValue K?
 	@return K
 
@@ -490,7 +542,7 @@ end
 	@within Array
 ]=]
 --
-function Class:reduceRight<T, K>(Callback: (accumulator: T, currentValue: T) -> K, initialValue: K?): K
+function Class:reduceRight<T, K>(Callback: (accumulator: T, currentValue: T) -> T, initialValue: K?): K
 	local _mem = initialValue or 0
 
 	self:forEach(function(data: T)
@@ -554,7 +606,7 @@ end
 	@within Array
 ]=]
 --
-function Class:filter<T>(Callback: (data: T, index: number, array: { T }) -> boolean): arrayPriv<T>
+function Class:filter<T>(Callback: (data: T, index: number, array: { T }) -> boolean): arrayPriv<any>
 	local newArray = Array.new(table.unpack(self._data))
 	newArray:_filterLoop(Callback)
 
@@ -581,7 +633,7 @@ end
 ]=]
 --
 function Class:find<T>(Callback: (data: T, index: number, array: { T }) -> boolean): T?
-	local value, index, _ = self:_findLoop(false, Callback)
+	local value, _index, _ = self:_findLoop(false, Callback)
 	return value
 end
 
@@ -602,7 +654,7 @@ end
 ]=]
 --
 function Class:findIndex<T>(Callback: (data: T, index: number, array: { T }) -> boolean): (T?, number?)
-	local value, index, _ = self:_findLoop(false, Callback)
+	local _, index, _ = self:_findLoop(false, Callback)
 	return index
 end
 
@@ -623,7 +675,7 @@ end
 ]=]
 --
 function Class:findLast<T>(Callback: (data: T, index: number, array: { T }) -> boolean): (T?, number?)
-	local value, index, _ = self:_findLoop(true, Callback)
+	local value, _, _ = self:_findLoop(true, Callback)
 	return value
 end
 
@@ -644,7 +696,7 @@ end
 ]=]
 --
 function Class:findLastIndex<T>(Callback: (data: T, index: number, array: { T }) -> boolean): (T?, number?)
-	local value, index, _ = self:_findLoop(true, Callback)
+	local _, index, _ = self:_findLoop(true, Callback)
 	return index
 end
 
@@ -686,10 +738,7 @@ end
 	@within Array
 ]=]
 --
-function Class:slice<T>(Start: number?, End: number?): arrayPriv<T>
-	local data = self._data
-	local newData = {}
-
+function Class:slice<T>(Start: number, End: number): arrayPriv<any>
 	local startType = typeof(Start)
 	local endType = typeof(End)
 
@@ -785,10 +834,10 @@ end
 	@within Array
 ]=]
 --
-function Class:push<T>(...: T): arrayPriv<T>
+function Class:push<T>(...: T): arrayPriv<any>
 	local dataToAdd = { ... }
 	for i = 1, #dataToAdd do
-		table.insert(self._data, #self._data + 1, dataToAdd[i])
+		table.insert(self._data, dataToAdd[i])
 	end
 
 	self.Length += #dataToAdd
@@ -833,7 +882,7 @@ end
 	@within Array
 ]=]
 --
-function Class:sort<T>(Callback: ((a: T, b: T) -> boolean)?): arrayPriv<T>
+function Class:sort<T>(Callback: ((a: T, b: T) -> boolean)?): arrayPriv<any>
 	if not Callback then
 		Callback = function(a: any, b: any)
 			local str1, str2 = tostring(a), tostring(b)
@@ -894,7 +943,7 @@ end
 	@within Array
 ]=]
 --
-function Class:splice<T>(index: number, deleteCount: number, ...: T): arrayPriv<T>
+function Class:splice<T>(index: number, deleteCount: number, ...: T): arrayPriv<any>
 	local toReplaceWith = { ... }
 
 	if index > self.Length then
@@ -936,7 +985,7 @@ end
 	@within Array
 ]=]
 --
-function Class:fill<T>(...: any): arrayPriv<T>
+function Class:fill<T>(...: any): arrayPriv<any>
 	local Data = { ... }
 	local Start = (tonumber(Data[2]) ~= nil) and Data[2] + 1 or 1
 	local End = (tonumber(Data[3]) ~= nil) and Data[3] or self.Length
@@ -996,7 +1045,7 @@ end
 	@within Array
 ]=]
 --
-function Class:toSpliced<T>(index: number, deleteCount: number, ...: T): arrayPriv<T>
+function Class:toSpliced<T>(index: number, deleteCount: number, ...: T): arrayPriv<any>
 	local newArray = Array._new(true, table.unpack(self._data))
 	newArray:splice(index, deleteCount, ...)
 
@@ -1011,7 +1060,7 @@ end
 	@within Array
 ]=]
 --
-function Class:toReversed<T>(): arrayPriv<T>
+function Class:toReversed<T>(): arrayPriv<any>
 	local newArray = Array._new(true, table.unpack(self._data))
 	newArray:reverse()
 
@@ -1027,7 +1076,7 @@ end
 	@within Array
 ]=]
 --
-function Class:toSorted<T>(Callback: ((a: T, b: T) -> boolean)?): arrayPriv<T>
+function Class:toSorted<T>(Callback: ((a: T, b: T) -> boolean)?): arrayPriv<any>
 	local newArray = Array._new(true, table.unpack(self._data))
 	newArray:sort(Callback)
 
@@ -1043,7 +1092,7 @@ end
 	@within Array
 ]=]
 --
-function Class:lastIndexOf<T>(item: any): arrayPriv<T>
+function Class:lastIndexOf<T>(item: any): arrayPriv<any>
 	for i = self.Length, 1, -1 do
 		if self._data[i] == item then
 			return self.Length - i
@@ -1054,7 +1103,7 @@ end
 
 --[=[
 	Returns the element at a given index.
-	@param index: number
+	@param index number?
 	@return T?
 
 	```lua
@@ -1066,7 +1115,7 @@ end
 	@within Array
 ]=]
 --
-function Class:at<T>(index: number?): T
+function Class:at<T>(index: number): T
 	index = index or 1
 	index = (index < 1) and self.Length - (index * -1) or index
 	return self[index]
@@ -1099,11 +1148,11 @@ function Class:concat<T>(...: any): arrayPriv<any>
 			end
 
 			for j = 1, #value do
-				table.insert(self._data, #self._data + 1, value[j])
+				table.insert(self._data, value[j])
 				self.Length += 1
 			end
 		else
-			table.insert(self._data, #self._data + 1, value)
+			table.insert(self._data, value)
 			self.Length += 1
 		end
 	end
@@ -1135,7 +1184,7 @@ function Class:join<T>(separator: string): string
 			if typeof(value) == "table" then
 				joinRecursively(value)
 			else
-				table.insert(endResult, #endResult + 1, value)
+				table.insert(endResult, value)
 			end
 		end
 	end
@@ -1159,7 +1208,7 @@ end
 	@within Array
 ]=]
 --
-function Class:with(index: number, value: any)
+function Class:with<T>(index: number, value: T): arrayPriv<any>
 	local newArray = Array._new(true, table.unpack(self._data))
 	newArray[index] = value
 
@@ -1180,7 +1229,7 @@ end
 	@within Array
 ]=]
 --
-function Class:indexOf(item: any)
+function Class:indexOf(item: any): number
 	for i = 1, #self._data do
 		if self._data[i] == item then
 			return i
@@ -1204,7 +1253,7 @@ end
 	@within Array
 ]=]
 --
-function Class:unshift(...: any)
+function Class:unshift<T>(...: T): number
 	local data = { ... }
 
 	for i = #data, 1, -1 do
@@ -1229,7 +1278,7 @@ end
 	@within Array
 ]=]
 --
-function Class:shift()
+function Class:shift<T>(): T
 	local elementValue = table.remove(self._data, 1)
 	return elementValue
 end

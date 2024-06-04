@@ -1,3 +1,5 @@
+gitRepoUrl = "https://github.com/ItsRune/Lua_Array"
+
 # Docusaurus settings
 [docusaurus]
 title = "Array"

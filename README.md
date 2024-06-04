@@ -34,5 +34,5 @@
 - [-] Array:keys
 - [x] Array:with
 - [x] Array:indexOf
-- [ ] Array:shift
-- [ ] Array:unshift
+- [x] Array:shift
+- [x] Array:unshift
