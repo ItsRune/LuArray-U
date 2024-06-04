@@ -10,10 +10,10 @@ export type arrayPriv<T> = {
 	_isArray: true,
 }
 
-export type arrayPub = {
-	new: (...any) -> arrayPriv<any>,
-	isArray: (array: any?) -> boolean,
-	from: (item: { any }, callback: (data: any) -> any) -> arrayPriv<any>,
+export type arrayPub<T> = {
+	new: (...T) -> arrayPriv<T>,
+	isArray: (array: arrayPriv<T>?) -> boolean,
+	from: (item: { T }, callback: (data: T) -> T) -> arrayPriv<T>,
 }
 
 --[=[
@@ -343,7 +343,16 @@ function Class:map<T, K>(Callback: (data: T, index: number, array: { T }) -> K):
 	end
 
 	local newArray = Array.new(table.unpack(self._data))
-	newArray:_changeLoop(Callback)
+	for index: number = 1, newArray.Length do
+		local value = newArray._data[index]
+		local newValue = Callback(value, index, newArray._data)
+
+		if newValue == nil then
+			newValue = value
+		end
+
+		newArray._data[index] = newValue
+	end
 
 	return newArray
 end
@@ -367,30 +376,60 @@ function Class:flat<T>(depth: number?): arrayPriv<T>
 	depth = depth or 1
 	local newArray = Array._new(true, table.unpack(self._data))
 
-	for i = 1, self.Length do
-		local value = self._data[i]
-		if typeof(value) ~= "table" then
-			continue
+	local function flatten()
+		for i = 1, newArray.Length do
+			local value = newArray._data[i]
+			if typeof(value) ~= "table" then
+				continue
+			end
+
+			local data = value
+			if Array.isArray(value) then
+				data = value._data
+			end
+
+			table.remove(newArray._data, i)
+			for j = 1, #data do
+				table.insert(newArray._data, #newArray._data + 1, data[j])
+				newArray.Length += 1
+			end
+			break
 		end
 
-		local data = value
-		if Array.isArray(value) then
-			data = value._data
+		depth -= 1
+		if depth == 0 then
+			return newArray
 		end
 
-		for j = 1, #data do
-			table.insert(self._data, #self._data + 1, data[j])
-			self.Length += 1
-		end
-		break
+		return flatten()
 	end
 
-	depth -= 1
-	if depth == 0 then
-		return self
-	end
+	return flatten()
+end
 
-	return self:flat(depth)
+--[=[
+	Performs a `Map` on the array followed by the `Flat` method with a depth of **1**. Unlike JavaScript's implementation, this method is slightly slower than calling individually.
+	@param Callback ((data: T, index: number, array: { T }) -> T)?
+	@return Array<T>
+
+	```lua
+	local myArray = Array.new(1, 2, 1)
+	myArray:flatMap(function(data: number)
+		return data == 2 and { 2, 2 } or data
+	end) -- Array [ 1, 2, 2, 1 ]
+	```
+
+	@tag Chainable
+	@since 1.0.0
+	@within Array
+]=]
+--
+function Class:flatMap<T, K>(Callback: (data: T, index: number, array: { T }) -> K): arrayPriv<K>
+	local newArray = self:map(Callback)
+	local newNewArray = newArray:flat(1)
+
+	newArray:Destroy()
+	return newNewArray
 end
 
 --[=[
@@ -428,15 +467,22 @@ function Class:reduce<T, K>(Callback: (accumulator: T, currentValue: T) -> K, in
 end
 
 --[=[
-	
-	@param Callback (data: T, index: number, array: { T }) -> K
-	@return Array
+	Does the same thing as [reduce](/api/Array#reduce) but backwards.
+	@param Callback (accumulator: T, currentValue: T) -> K
+	@param initialValue K?
+	@return K
 
 	```lua
-	local myArray = Array.new(1,2,3,4)
-	myArray:map(function(x: number)
-		return x * 2
-	end)
+	local myArray = Array.new(1, 2, 3, 4)
+	local initialValue = 0
+	print(
+		myArray:reduceRight(
+			function(accumulator: number, value: number)
+				return accumulator + value
+			end,
+			initialValue
+		)
+	) --> 10
 	```
 
 	@tag Chainable
@@ -444,6 +490,15 @@ end
 	@within Array
 ]=]
 --
+function Class:reduceRight<T, K>(Callback: (accumulator: T, currentValue: T) -> K, initialValue: K?): K
+	local _mem = initialValue or 0
+
+	self:forEach(function(data: T)
+		_mem = Callback(_mem, data)
+	end, true)
+
+	return _mem
+end
 
 --[=[
 	Creates a new Array from a variable number of arguments.
@@ -658,6 +713,7 @@ end
 --[=[
 	Performs a for loop on the array with a given callback which doesn't affect any entries.
 	@param Callback Callback: (data: T, index: number, array: { T }) -> ()
+	@param _reverse boolean?
 	@return Array<T>
 
 	```lua
@@ -670,7 +726,16 @@ end
 	@within Array
 ]=]
 --
-function Class:forEach<T>(Callback: (data: T, index: number, array: { T }) -> ()): ()
+function Class:forEach<T>(Callback: (data: T, index: number, array: { T }) -> (), _reverse: boolean?): ()
+	if _reverse then
+		for index: number = #self._data, 1, -1 do
+			local value = self._data[index]
+			Callback(value, index, self._data)
+		end
+
+		return self
+	end
+
 	for index: number = 1, #self._data do
 		local value = self._data[index]
 		Callback(value, index, self._data)
@@ -962,7 +1027,7 @@ end
 	@within Array
 ]=]
 --
-function Class:toReversed<T>(Callback: ((a: T, b: T) -> boolean)?): arrayPriv<T>
+function Class:toSorted<T>(Callback: ((a: T, b: T) -> boolean)?): arrayPriv<T>
 	local newArray = Array._new(true, table.unpack(self._data))
 	newArray:sort(Callback)
 
@@ -988,6 +1053,188 @@ function Class:lastIndexOf<T>(item: any): arrayPriv<T>
 end
 
 --[=[
+	Returns the element at a given index.
+	@param index: number
+	@return T?
+
+	```lua
+	local myArray = Array.new("ant", "bison", "camel", "duck", "elephant")
+	myArray:Destroy() -- Once used this can't be used again.
+	```
+
+	@since 1.0.0
+	@within Array
+]=]
+--
+function Class:at<T>(index: number?): T
+	index = index or 1
+	index = (index < 1) and self.Length - (index * -1) or index
+	return self[index]
+end
+
+--[=[
+	Merges one or more into a single Array.
+	@param ... any
+	@return Array<T>
+
+	```lua
+	local myArray = Array.new("ant", "bison")
+	local secondArray = Array.new(1, 2, 3)
+	myArray:concat(secondArray) -- Array [ "ant", "bison", 1, 2, 3 ]
+	```
+
+	@tag Chainable
+	@since 1.0.0
+	@within Array
+]=]
+--
+function Class:concat<T>(...: any): arrayPriv<any>
+	local dataToAdd = { ... }
+
+	for i = 1, #dataToAdd do
+		local value = dataToAdd[i]
+		if typeof(value) == "table" then
+			if Array.isArray(value) then
+				value = value._data
+			end
+
+			for j = 1, #value do
+				table.insert(self._data, #self._data + 1, value[j])
+				self.Length += 1
+			end
+		else
+			table.insert(self._data, #self._data + 1, value)
+			self.Length += 1
+		end
+	end
+
+	return self
+end
+
+--[=[
+	Joins the array based on the separator.
+	@param separator string
+	@return string
+
+	```lua
+	local myArray = Array.new("ant", "bison")
+	print(myArray:join("-")) -- "ant-bison"
+	```
+
+	@since 1.0.0
+	@within Array
+]=]
+--
+function Class:join<T>(separator: string): string
+	local endResult = {}
+
+	local function joinRecursively(obj: { string })
+		for i = 1, #obj do
+			local value = obj[i]
+
+			if typeof(value) == "table" then
+				joinRecursively(value)
+			else
+				table.insert(endResult, #endResult + 1, value)
+			end
+		end
+	end
+
+	joinRecursively(self._data)
+	return table.concat(endResult, separator)
+end
+
+--[=[
+	Mimics bracket-notation, returning a new Array with the index replaced with the value.
+	@param index number
+	@param value any
+	@return Array<T>
+
+	```lua
+	local myArray = Array.new("ant", "bison", "camel")
+	local fixedArray = myArray:with(3, "Cone") -- Array [ "ant", "bison", "Cone" ]
+	```
+
+	@since 1.0.0
+	@within Array
+]=]
+--
+function Class:with(index: number, value: any)
+	local newArray = Array._new(true, table.unpack(self._data))
+	newArray[index] = value
+
+	return newArray
+end
+
+--[=[
+	Finds the index of an element from left to right. Returns a `-1` if the element can't be found.
+	@param item any
+	@return number
+
+	```lua
+	local myArray = Array.new("ant", "bison", "camel")
+	print(myArray:indexOf("bison")) -- 2
+	```
+
+	@since 1.0.0
+	@within Array
+]=]
+--
+function Class:indexOf(item: any)
+	for i = 1, #self._data do
+		if self._data[i] == item then
+			return i
+		end
+	end
+	return -1
+end
+
+--[=[
+	Adds element(s) to the beginning of the array and returns the length.
+	@param ... any
+	@return number
+
+	```lua
+	local myArray = Array.new("ant", "bison", "camel")
+	print(myArray:unshift("something")) -- 4
+	print(myArray:join(",")) -- "something,ant,bison,camel"
+	```
+
+	@since 1.0.0
+	@within Array
+]=]
+--
+function Class:unshift(...: any)
+	local data = { ... }
+
+	for i = #data, 1, -1 do
+		table.insert(self._data, 1, data[i])
+		self.Length += 1
+	end
+
+	return self.Length
+end
+
+--[=[
+	Removes a single element from the beginning of the Array and returns it's value.
+	@return T
+
+	```lua
+	local myArray = Array.new("ant", "bison", "camel")
+	print(myArray:shift()) -- "ant"
+	print(myArray:join(",")) -- "bison,camel"
+	```
+
+	@since 1.0.0
+	@within Array
+]=]
+--
+function Class:shift()
+	local elementValue = table.remove(self._data, 1)
+	return elementValue
+end
+
+--[=[
 	Clears the Array and prepares it for garbage collection.
 	@return nil
 
@@ -1006,64 +1253,5 @@ function Class:Destroy()
 	self = nil
 end
 
---[=[
-	Temporary method to print the result into the output.
-
-	@ignore
-	@since 1.0.0
-	@within Array
-]=]
---
-function Class:debugPrint()
-	print("------------------------------")
-	self:forEach(print)
-end
-
-local myArr = Array.new("ant", "bison", "camel", "duck", "elephant")
-
--- print(myArr
--- 	:Map(function(x: string)
--- 		return string.len(x)
--- 	end)
--- 	:debugPrint())
-
--- print(table.concat(
--- 	myArr:Filter(function(x: string)
--- 		return string.len(x) == 4
--- 	end),
--- 	", "
--- ))
-
--- print(myArr:reverse():debugPrint())
-
--- myArr:sort(function(first: string, second: string)
--- 	local firstChar, secondChar = string.sub(first, 1, 1), string.sub(second, 1, 1)
--- 	return string.byte(firstChar) > string.byte(secondChar)
--- end) --> "elephant", "duck", "camel", "bison", "ant"
-
--- myArr:splice(2, 1, "spider")
-
--- local myArray = Array.new(1, 2, 3, 4)
-
--- print(myArray:reduce(function(acc, val)
--- 	return acc + val
--- end))
-
--- myArray:debugPrint()
--- myArray:fill(0, 2, 4) --> 1, 2, 0, 0
--- myArray:debugPrint()
--- myArray:fill(5, 1) --> 1, 5, 5, 5
--- myArray:debugPrint()
--- myArray:fill(6) --> 6, 6, 6, 6
--- myArray:debugPrint()
-
--- local iterator = myArr:entries()
--- iterator.Value:debugPrint()
--- iterator:Next().Value:debugPrint()
--- iterator:Next().Value:debugPrint()
--- iterator:Next().Value:debugPrint()
--- iterator:Next().Value:debugPrint()
-
--- myArr:debugPrint()
 --// Return \--
 return Array :: arrayPub

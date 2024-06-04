@@ -8,32 +8,31 @@
 - [x] Array:forEach
 - [x] Array:find
 - [x] Array:every
-- [ ] Array:at
-- [ ] Array:flat
-- [ ] Array:flatmap
 - [x] Array:entries
-- [ ] Array:copyWithin
-- [ ] Array:concat
 - [x] Array:findIndex
 - [x] Array:findLast
 - [x] Array:findLastIndex
 - [x] Array:includes
-- [ ] Array:indexOf
-- [ ] Array:join
-- [ ] Array:keys
 - [x] Array:lastIndexOf
 - [x] Array:pop
 - [x] Array:push
 - [x] Array:reduce
-- [ ] Array:reduceRight
 - [x] Array:reverse
-- [ ] Array:shift
 - [x] Array:slice
 - [x] Array:sort
 - [x] Array:toReversed
 - [x] Array:toSorted
 - [x] Array:toSpliced
 - [x] Array:toString
-- [ ] Array:unshift
 - [x] Array:values
-- [ ] Array:with
+- [x] Array:flat
+- [x] Array:reduceRight
+- [x] Array:at
+- [x] Array:flatmap
+- [x] Array:concat
+- [x] Array:join
+- [-] Array:keys
+- [x] Array:with
+- [x] Array:indexOf
+- [ ] Array:shift
+- [ ] Array:unshift
