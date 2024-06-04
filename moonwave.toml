@@ -1,0 +1,5 @@
+# Docusaurus settings
+[docusaurus]
+title = "Array"
+onBrokenLinks = "warn"
+onBrokenMarkdownLinks = "warn"
