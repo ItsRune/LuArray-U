@@ -11,7 +11,8 @@
 	
 	A JavaScript-like Arrays data structuring module.
 	By: ltsRune (https://www.roblox.com/users/107392833/profile)
-	Updated: 6/5/2024 06:21 EDT
+	API Docs: https://itsrune.github.io/Lua_Array/api/Array
+	Updated: 6/5/2024 14:53 EDT
 	Version: 1.0.0
 ]]
 --

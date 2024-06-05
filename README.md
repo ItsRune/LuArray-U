@@ -31,7 +31,6 @@
 - [x] Array:flatmap
 - [x] Array:concat
 - [x] Array:join
-- [-] Array:keys
 - [x] Array:with
 - [x] Array:indexOf
 - [x] Array:shift
