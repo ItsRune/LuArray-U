@@ -1,8 +1,26 @@
+--[[
+		
+	 ___                       
+	/ _ \                      
+	/ /_\ \_ __ _ __ __ _ _   _ 
+	|  _  | '__| '__/ _` | | | |
+	| | | | |  | | | (_| | |_| |
+	\_| |_/_|  |_|  \__,_|\__, |
+						   __/ |
+						   |___/ 
+	
+	A JavaScript-like Arrays data structuring module.
+	By: ltsRune (https://www.roblox.com/users/107392833/profile)
+	Updated: 6/5/2024 06:21 EDT
+	Version: 1.0.0
+]]
+--
+
 export type arrayPriv<T> = {
-	__len: (self: arrayPriv<T>) -> number,
-	__newindex: (self: arrayPriv<T>, index: number, value: T) -> (),
-	__index: (self: arrayPriv<T>, index: any) -> any,
-	__iter: (self: arrayPriv<T>) -> { T },
+	__len: (tbl: arrayPriv<T>) -> number,
+	__newindex: (tbl: arrayPriv<T>, index: number, value: T) -> (),
+	__index: (tbl: arrayPriv<T>, index: any) -> any,
+	__iter: (tbl: arrayPriv<T>) -> { T },
 
 	_changeLoop: (Callback: (data: T, index: number, array: { T }) -> T) -> (T, number, { T }),
 	_filterLoop: (Callback: (data: T, index: number, array: { T }) -> T) -> arrayPriv<T>,
@@ -23,42 +41,41 @@ export type arrayPriv<T> = {
 
 	Length: number,
 
-	map: (Callback: (data: T, index: number, array: { T }) -> T) -> arrayPriv<T>,
-	flat: (depth: number?) -> arrayPriv<T>,
-	flatMap: (Callback: (data: T, index: number, array: { T }) -> T) -> arrayPriv<T>,
-	reduce: (Callback: (accumulator: T, currentValue: T) -> T, initialValue: K?) -> T,
-	reduceRight: (Callback: (accumulator: T, currentValue: T) -> T, initialValue: K?) -> T,
-	some: (Callback: (data: T, index: number, array: { T }) -> boolean) -> boolean,
-	filter: (Callback: (data: T, index: number, array: { T }) -> boolean) -> arrayPriv<T>,
-	find: (Callback: (data: T, index: number, array: { T }) -> boolean) -> T?,
-	findIndex: (Callback: (data: T, index: number, array: { T }) -> boolean) -> (T?, number?),
-	findLast: (Callback: (data: T, index: number, array: { T }) -> boolean) -> (T?, number?),
-	findLastIndex: (Callback: (data: T, index: number, array: { T }) -> boolean) -> (T?, number?),
-	includes: (item: T) -> boolean,
-	slice: (Start: number?, End: number?) -> arrayPriv<T>,
-	forEach: (Callback: (data: T, index: number, array: { T }) -> (), _reverse: boolean?) -> (),
-	every: (Callback: (data: T, index: number, array: { T }) -> boolean) -> boolean,
-	push: (...T) -> arrayPriv<T>,
-	pop: () -> T,
-	sort: (Callback: ((a: T, b: T) -> boolean)?) -> arrayPriv<T>,
-	reverse: () -> { T },
-	splice: (index: number, deleteCount: number, ...T) -> arrayPriv<T>,
-	fill: (...any) -> arrayPriv<T>,
-	values: () -> { T },
-	entries: () -> arrayIter<T>,
-	toSpliced: (index: number, deleteCount: number, ...T) -> arrayPriv<T>,
-	toSpliced: (index: number, deleteCount: number, ...T) -> arrayPriv<T>,
-	toReversed: () -> arrayPriv<T>,
-	toSorted: (Callback: ((a: T, b: T) -> boolean)?) -> arrayPriv<T>,
-	lastIndexOf: (item: any) -> arrayPriv<T>,
-	at: (index: number?) -> T,
-	concat: (...any) -> arrayPriv<any>,
-	join: (separator: string) -> string,
-	unshift: (...T) -> number,
-	shift: () -> T,
-	Destroy: () -> (),
-	with: (index: number, value: T) -> arrayPriv<T>,
-	indexOf: (item: any) -> number,
+	map: (self: arrayPriv<T>, Callback: (data: T, index: number, array: { T }) -> T) -> arrayPriv<T>,
+	flat: (self: arrayPriv<T>, depth: number?) -> arrayPriv<T>,
+	flatMap: (self: arrayPriv<T>, Callback: (data: T, index: number, array: { T }) -> T) -> arrayPriv<T>,
+	reduce: (self: arrayPriv<T>, Callback: (accumulator: T, currentValue: T) -> T, initialValue: K?) -> T,
+	reduceRight: (self: arrayPriv<T>, Callback: (accumulator: T, currentValue: T) -> T, initialValue: K?) -> T,
+	some: (self: arrayPriv<T>, Callback: (data: T, index: number, array: { T }) -> boolean) -> boolean,
+	filter: (self: arrayPriv<T>, Callback: (data: T, index: number, array: { T }) -> boolean) -> arrayPriv<T>,
+	find: (self: arrayPriv<T>, Callback: (data: T, index: number, array: { T }) -> boolean) -> T?,
+	findIndex: (self: arrayPriv<T>, Callback: (data: T, index: number, array: { T }) -> boolean) -> (T?, number?),
+	findLast: (self: arrayPriv<T>, Callback: (data: T, index: number, array: { T }) -> boolean) -> (T?, number?),
+	findLastIndex: (self: arrayPriv<T>, Callback: (data: T, index: number, array: { T }) -> boolean) -> (T?, number?),
+	includes: (self: arrayPriv<T>, item: T) -> boolean,
+	slice: (self: arrayPriv<T>, Start: number?, End: number?) -> arrayPriv<T>,
+	forEach: (self: arrayPriv<T>, Callback: (data: T, index: number, array: { T }) -> (), _reverse: boolean?) -> (),
+	every: (self: arrayPriv<T>, Callback: (data: T, index: number, array: { T }) -> boolean) -> boolean,
+	push: (self: arrayPriv<T>, ...T) -> arrayPriv<T>,
+	pop: (self: arrayPriv<T>) -> T,
+	sort: (self: arrayPriv<T>, Callback: ((a: T, b: T) -> boolean)?) -> arrayPriv<T>,
+	reverse: (self: arrayPriv<T>) -> { T },
+	splice: (self: arrayPriv<T>, index: number, deleteCount: number, ...T) -> arrayPriv<T>,
+	fill: (self: arrayPriv<T>, ...any) -> arrayPriv<T>,
+	values: (self: arrayPriv<T>) -> { T },
+	entries: (self: arrayPriv<T>) -> arrayIter<T>,
+	toSpliced: (self: arrayPriv<T>, index: number, deleteCount: number, ...T) -> arrayPriv<T>,
+	toReversed: (self: arrayPriv<T>) -> arrayPriv<T>,
+	toSorted: (self: arrayPriv<T>, Callback: ((a: T, b: T) -> boolean)?) -> arrayPriv<T>,
+	lastIndexOf: (self: arrayPriv<T>, item: any) -> arrayPriv<T>,
+	at: (self: arrayPriv<T>, index: number?) -> T,
+	concat: (self: arrayPriv<T>, ...any) -> arrayPriv<any>,
+	join: (self: arrayPriv<T>, separator: string) -> string,
+	unshift: (self: arrayPriv<T>, ...T) -> number,
+	shift: (self: arrayPriv<T>) -> T,
+	Destroy: (self: arrayPriv<T>) -> (),
+	with: (self: arrayPriv<T>, index: number, value: T) -> arrayPriv<T>,
+	indexOf: (self: arrayPriv<T>, item: any) -> number,
 }
 
 export type arrayPub<T> = {
@@ -76,11 +93,8 @@ export type arrayPub<T> = {
 local Array = {}
 local Class = {}
 
-local isRobloxEnvironment, arrayIteratorModule = pcall(function()
-	return script.ArrayIterator
-end)
-
-local ArrayIterator = require(isRobloxEnvironment and arrayIteratorModule or "ArrayIterator")
+local isRobloxEnvironment = pcall(game["GetService"], game, "Workspace")
+local ArrayIterator = require(isRobloxEnvironment and script.ArrayIterator or "ArrayIterator")
 
 --// Array Metamethods \\--
 Class.__len = function(self: arrayPriv<any>)
@@ -1303,4 +1317,8 @@ function Class:Destroy()
 end
 
 --// Return \--
-return Array :: arrayPub
+return setmetatable(Array, {
+	__call = function(self, ...)
+		return self.new(...)
+	end,
+})
