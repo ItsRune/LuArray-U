@@ -94,7 +94,7 @@ export type arrayPub<T> = {
 local Array = {}
 local Class = {}
 
-local isRobloxEnvironment = pcall(game["GetService"], game, "Workspace")
+local isRobloxEnvironment = pcall(elapsedTime)
 local ArrayIterator = require(isRobloxEnvironment and script.ArrayIterator or "ArrayIterator")
 
 --// Array Metamethods \\--
