@@ -1,7 +1,23 @@
-gitRepoUrl = "https://github.com/ItsRune/Lua_Array"
+gitRepoUrl = "https://github.com/ItsRune/LuArray-U"
 
 # Docusaurus settings
 [docusaurus]
-title = "Array"
+title = "LuArray-U"
 onBrokenLinks = "warn"
 onBrokenMarkdownLinks = "warn"
+
+[home]
+enabled = true
+includeReadme = true
+
+[[home.features]]
+title = "Easy To Use"
+description = "With ease of use in mind, I made sure to keep a simple yet informative documentation for each method."
+
+[[home.features]]
+title = "Rich API"
+description = "Includes many powerful functions along with some being able to chain with others."
+
+[[home.features]]
+title = "Performance"
+description = "Designed to be as fast as possible, while maintaining the integrity of the method-structure."

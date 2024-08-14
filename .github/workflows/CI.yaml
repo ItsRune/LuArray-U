@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+
+jobs:
+  lint:
+    name: Lint & Style Check
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Install Foreman
+      uses: Roblox/setup-foreman@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Verify selene.toml exists & Create new if it doesn't
+      run: |
+        if ! test -f selene.toml; then
+          touch selene.toml
+          echo 'std="roblox+luau"' >> selene.toml
+        fi
+      shell: bash
+    
+    - name: Lint & Stylua Check
+      run: |
+        selene generate-roblox-std
+        selene ./src
+        stylua ./src
+      shell: bash

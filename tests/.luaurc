@@ -1,0 +1,6 @@
+{
+    "paths": ["../src"],
+    "aliases": {
+        "Array": "init"
+    }
+}

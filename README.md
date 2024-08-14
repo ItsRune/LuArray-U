@@ -1,37 +1,11 @@
-# To do list
-- [x] Array.from
-- [x] Array.of
-- [x] Array:filter
-- [x] Array:map
-- [x] Array.new
-- [x] Array:some
-- [x] Array:forEach
-- [x] Array:find
-- [x] Array:every
-- [x] Array:entries
-- [x] Array:findIndex
-- [x] Array:findLast
-- [x] Array:findLastIndex
-- [x] Array:includes
-- [x] Array:lastIndexOf
-- [x] Array:pop
-- [x] Array:push
-- [x] Array:reduce
-- [x] Array:reverse
-- [x] Array:slice
-- [x] Array:sort
-- [x] Array:toReversed
-- [x] Array:toSorted
-- [x] Array:toSpliced
-- [x] Array:toString
-- [x] Array:values
-- [x] Array:flat
-- [x] Array:reduceRight
-- [x] Array:at
-- [x] Array:flatmap
-- [x] Array:concat
-- [x] Array:join
-- [x] Array:with
-- [x] Array:indexOf
-- [x] Array:shift
-- [x] Array:unshift
+<div align="center">
+    
+    # LuArray-U
+    A library for JavaScript-like Arrays
+    [Documentation](https://github.io/itsRune/LuArray-U)
+
+</div>
+<!--moonwave-hide-before-this-line-->
+
+## Why should I use LuArray-U?
+With the Lua-U's default table library, I felt there weren't enough functions to manipulate tables. So I created LuArray-U, a library that adds more functions to manipulate tables, unlike to JavaScript's Array functions.

@@ -1,10 +1,10 @@
 {
-  "name": "Array",
+  "name": "LuArray-U",
   "tree": {
     "$className": "DataModel",
 
     "ReplicatedStorage": {
-      "Array": {
+      "LuArray": {
         "$path": "src"
       }
     }
