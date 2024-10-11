@@ -1,4 +1,6 @@
 # To do list
+- [x] Fix quicksort
+
 - [x] Array.new
 - [x] Array.from
 - [x] Array.of

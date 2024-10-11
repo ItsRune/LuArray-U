@@ -1,4 +1,4 @@
-local Array = require("@Array")
+local Array = require("../src/init")
 
 local arr = Array(3)
 local arr2 = Array.new(6)

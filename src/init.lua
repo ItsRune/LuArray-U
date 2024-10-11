@@ -1,3 +1,4 @@
+--!nocheck
 --[[
 		
 	 ___                       
@@ -26,7 +27,6 @@ local Array = {}
 local Class = {}
 
 local isRobloxEnvironment = pcall(elapsedTime)
-local print = isRobloxEnvironment and warn or print
 local ArrayIterator = require(isRobloxEnvironment and script.ArrayIterator or "ArrayIterator")
 
 --// Types \\--
@@ -36,19 +36,26 @@ export type arrayPriv<T> = {
 	__index: (tbl: arrayPriv<T>, index: any) -> any,
 	__iter: (tbl: arrayPriv<T>) -> { T },
 
-	_changeLoop: (Callback: (data: T, index: number, array: { T }) -> T) -> (T, number, { T }),
-	_filterLoop: (Callback: (data: T, index: number, array: { T }) -> T) -> arrayPriv<T>,
+	_changeLoop: (self: arrayPriv<T>, Callback: (data: T, index: number, array: { T }) -> T) -> (T, number, { T }),
+	_filterLoop: (self: arrayPriv<T>, Callback: (data: T, index: number, array: { T }) -> T) -> arrayPriv<T>,
 	_findLoop: (
+		self: arrayPriv<T>,
 		reversed: boolean,
 		Callback: (data: T, index: number, array: { T }) -> T
 	) -> (T?, number?, { T }?),
-	_swap: (first: number, second: number) -> (),
+	_swap: (self: arrayPriv<T>, first: number, second: number) -> (),
 	_partition: (
+		self: arrayPriv<T>,
 		Start: number,
 		End: number,
 		Callback: (data: T, index: number, array: { T }) -> boolean
 	) -> arrayPriv<T>,
-	_quickSort: (Start: number, End: number, Callback: (data: T, index: number, array: { T }) -> boolean) -> (),
+	_quickSort: (
+		self: arrayPriv<T>,
+		Start: number,
+		End: number,
+		Callback: (data: T, index: number, array: { T }) -> boolean
+	) -> (),
 
 	_data: { T },
 	_isArray: true,
@@ -350,6 +357,7 @@ function Class:_findLoop<T>(
 			return value, index, self._data
 		end
 	end
+	return
 end
 
 --[=[
@@ -365,12 +373,7 @@ end
 --
 function Class:_swap(first: number, second: number): ()
 	assert(first and second, "Please specify which two indices you'd like to swap.")
-
-	local firstValue = self._data[first]
-	local secondValue = self._data[second]
-
-	self._data[first] = secondValue
-	self._data[second] = firstValue
+	self._data[first], self._data[second] = self._data[second], self._data[first]
 end
 
 --[=[
@@ -390,7 +393,7 @@ function Class:_partition<T>(Start: number, End: number, Callback: ((a: T, b: T)
 	local sortingIndex = Start - 1
 
 	for index = Start, End do
-		if not Callback(self._data[index], pivot) then
+		if not Callback or not Callback(self._data[index], pivot) then
 			continue
 		end
 
@@ -418,14 +421,6 @@ end
 --
 function Class:_quickSort<T>(Start: number, End: number, Callback: ((a: T, b: T) -> boolean)?): ()
 	if End <= Start or #self == 1 then -- Can't sort a single index.
-		return
-	elseif Start + 1 == End then -- Sorting 2 indices
-		local a = self[Start]
-		local b = self[End]
-
-		if Callback(a, b) then
-			self:_swap(Start, End)
-		end
 		return
 	end
 
@@ -947,9 +942,11 @@ end
 function Class:sort<T>(Callback: ((a: T, b: T) -> boolean)?): arrayPriv<T>
 	if not Callback then
 		Callback = function(a: any, b: any)
-			local str1, str2 = tostring(a), tostring(b)
-			local char1, char2 = string.sub(str1, 1, 1), string.sub(str2, 1, 1)
-			return string.byte(char1) < string.byte(char2)
+			if not tonumber(a) and not tonumber(b) then
+				return #tostring(a) < #tostring(b)
+			end
+
+			return a < b
 		end
 	end
 
